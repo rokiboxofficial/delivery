@@ -15,8 +15,11 @@ public class RandomLocationProviderTests
     public void WhenGettingRandomLocation_AndRandomNumberProviderHasImplementation_ThenGetRandomNumberShouldBeCalledCorrectlyAndRandomLocationShouldBeCorrect()
     {
         // Arrange.
+        var expectedX = Location.MinLocation.X;
+        var expectedY = Location.MinLocation.Y;
+        
         var randomNumberProvider = Substitute.For<IRandomNumberProvider>();
-        randomNumberProvider.GetRandomNumber(Arg.Any<int>(), Arg.Any<int>()).Returns(Location.MinLocation.X, Location.MaxLocation.Y);
+        randomNumberProvider.GetRandomNumber(Arg.Any<int>(), Arg.Any<int>()).Returns(expectedX, expectedY);
         var randomLocationProvider = new RandomLocationProvider(randomNumberProvider);
         
         // Act.
@@ -29,6 +32,6 @@ public class RandomLocationProviderTests
             .Select(call => call.GetArguments())
             .ToArray();
         calls.Should().BeEquivalentTo(new int[][] { [Location.MinLocation.X, Location.MaxLocation.X], [Location.MinLocation.Y, Location.MaxLocation.Y] });
-        randomLocation.Should().Be(Location.Create(Location.MinLocation.X, Location.MaxLocation.X).Value);
+        randomLocation.Should().Be(Location.Create(expectedX, expectedY).Value);
     }
 }
