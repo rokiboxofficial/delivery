@@ -31,16 +31,18 @@ public sealed class StoragePlace : Entity<Guid>
         return new StoragePlace(name, totalVolume);
     }
 
-    public bool CanStore(int orderVolume)
+    public Result<bool, Error> CanStore(int orderVolume)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(orderVolume);
+        if(orderVolume <= 0) return GeneralErrors.ValueIsInvalid(nameof(orderVolume));
         
         return orderVolume <= TotalVolume && OrderId is null;
     }
 
     public UnitResult<Error> Store(Guid orderId, int orderVolume)
     {
-        if (!CanStore(orderVolume)) return Errors.OrderCannotBeStored();
+        if (CanStore(orderVolume) is var canStore && (canStore.IsFailure || !canStore.Value))
+            return Errors.OrderCannotBeStored();
+
         OrderId = orderId;
         
         return UnitResult.Success<Error>();

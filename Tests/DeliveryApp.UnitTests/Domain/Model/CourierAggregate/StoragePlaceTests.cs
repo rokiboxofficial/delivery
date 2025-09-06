@@ -48,16 +48,16 @@ public class StoragePlaceTests
     [Theory]
     [InlineData(-1)]
     [InlineData(0)]
-    public void WhenCanStoring_AndOrderVolumeIsNegativeOr0_ThenArgumentOutOfRangeExceptionShouldBeThrown(int volume)
+    public void WhenCanStoring_AndOrderVolumeIsNegativeOr0_ThenCanStoringResultErrorCodeShouldBeValueIsInvalid(int volume)
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
         
         // Act.
-        Action act = () => storagePlace.CanStore(volume);
+        var canStoringResult = storagePlace.CanStore(volume);
 
         // Assert.
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        canStoringResult.Error.Code.Should().Be(ErrorCodes.ValueIsInvalid);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class StoragePlaceTests
         var storagePlace = Create.StoragePlace();
 
         // Act.
-        var result = storagePlace.CanStore(storagePlace.TotalVolume + 1);
+        var result = storagePlace.CanStore(storagePlace.TotalVolume + 1).Value;
 
         // Assert.
         result.Should().BeFalse();
@@ -81,7 +81,7 @@ public class StoragePlaceTests
         storagePlace.Store(Guid.NewGuid(), 1);
         
         // Act.
-        var result = storagePlace.CanStore(1);
+        var result = storagePlace.CanStore(1).Value;
 
         // Assert.
         result.Should().BeFalse();
@@ -96,7 +96,7 @@ public class StoragePlaceTests
         var storagePlace = Create.StoragePlace();
         
         // Act.
-        var result = storagePlace.CanStore(volume);
+        var result = storagePlace.CanStore(volume).Value;
         
         // Assert.
         result.Should().BeTrue();
@@ -119,16 +119,16 @@ public class StoragePlaceTests
     [Theory]
     [InlineData(-1)]
     [InlineData(0)]
-    public void WhenStoring_AndOrderVolumeIsNegativeOr0_ThenExceptionShouldBeThrown(int volume)
+    public void WhenStoring_AndOrderVolumeIsNegativeOr0_ThenStoringResultErrorCodeShouldBeOrderCannotBeStored(int volume)
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
 
         // Act.
-        Action act = () => storagePlace.Store(Guid.NewGuid(), volume);
+        var storingResult = storagePlace.Store(Guid.NewGuid(), volume);
 
         // Assert.
-        act.Should().Throw<Exception>();
+        storingResult.Error.Code.Should().Be(ErrorCodes.OrderCannotBeStored);
     }
 
     [Fact]
