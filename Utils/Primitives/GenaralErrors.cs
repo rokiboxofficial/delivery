@@ -5,10 +5,10 @@ namespace Primitives;
 /// </summary>
 public static class GeneralErrors
 {
-    public static Error NotFound(long? id = null)
+    public static Error NotFound(long? id = null, Error innerError = null)
     {
         var forId = id == null ? "" : $" for Id '{id}'";
-        return new Error("record.not.found", $"Record not found{forId}");
+        return new Error("record.not.found", $"Record not found{forId}", innerError);
     }
 
     public static Error ValueIsInvalid(string name)
@@ -43,8 +43,8 @@ public static class GeneralErrors
             $"The collection must contain {max} items or more. It contains {current} items.");
     }
 
-    public static Error InternalServerError(string message)
+    public static Error InternalServerError(string message, Error innerError = null)
     {
-        return new Error("internal.server.error", message);
+        return new Error("internal.server.error", message, innerError);
     }
 }

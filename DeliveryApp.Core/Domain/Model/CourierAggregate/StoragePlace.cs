@@ -41,7 +41,7 @@ public sealed class StoragePlace : Entity<Guid>
     public UnitResult<Error> Store(Guid orderId, int orderVolume)
     {
         if (CanStore(orderVolume) is var canStore && (canStore.IsFailure || !canStore.Value))
-            return Errors.OrderCannotBeStored();
+            return Errors.OrderCannotBeStored(innerError: canStore.IsFailure ? canStore.Error : null);
 
         OrderId = orderId;
         
@@ -50,7 +50,8 @@ public sealed class StoragePlace : Entity<Guid>
 
     public UnitResult<Error> Clear(Guid orderId)
     {
-        if (OrderId is null || OrderId != orderId) return Errors.OrderCannotBeCleared();
+        if (OrderId is null || OrderId != orderId)
+            return Errors.OrderCannotBeCleared($"OrderId({OrderId}) is not set or not equal to {orderId}");
 
         OrderId = null;
         return UnitResult.Success<Error>();
@@ -58,10 +59,10 @@ public sealed class StoragePlace : Entity<Guid>
 
     public static class Errors
     {
-        public static Error OrderCannotBeStored()
-            => new Error("order.cannot.be.stored", "Order cannot be stored");
+        public static Error OrderCannotBeStored(string message = "Order cannot be stored", Error innerError = null)
+            => new Error("order.cannot.be.stored", message, innerError);
         
-        public static Error OrderCannotBeCleared()
-            => new Error("order.cannot.be.cleared", "Order cannot be cleared");
+        public static Error OrderCannotBeCleared(string message = "Order cannot be cleared", Error innerError = null)
+            => new Error("order.cannot.be.cleared", message, innerError);
     }
 }

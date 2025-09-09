@@ -3,7 +3,7 @@ using DeliveryApp.Core.Domain.Model.SharedKernel;
 using FluentAssertions;
 using Xunit;
 
-namespace DeliveryApp.UnitTests.Domain.Model.SharedKernel;
+namespace DeliveryApp.UnitTests.Core.Domain.Model.SharedKernel;
 
 public class LocationTests
 {

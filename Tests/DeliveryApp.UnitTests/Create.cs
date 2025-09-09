@@ -16,6 +16,6 @@ public static class Create
     
     public static StoragePlace StoragePlace(string name = "test", int totalVolume = 10)
     {
-        return Core.Domain.Model.CourierAggregate.StoragePlace.Create(name, totalVolume).Value;
+        return DeliveryApp.Core.Domain.Model.CourierAggregate.StoragePlace.Create(name, totalVolume).Value;
     }
 }

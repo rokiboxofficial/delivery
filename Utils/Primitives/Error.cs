@@ -3,19 +3,25 @@ using CSharpFunctionalExtensions;
 
 namespace Primitives;
 
-[ExcludeFromCodeCoverage]
 public sealed class Error : ValueObject
 {
     private const string Separator = "||";
+    private const int RequiredPropertiesCount = 2;
 
+    [ExcludeFromCodeCoverage]
     private Error()
     {
+        
     }
 
-    public Error(string code, string message)
+    public Error(string code, string message, Error innerError = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(code, nameof(code));
+        ArgumentException.ThrowIfNullOrEmpty(message, nameof(message));
+        
         Code = code;
         Message = message;
+        InnerError = innerError;
     }
 
     /// <summary>
@@ -28,27 +34,48 @@ public sealed class Error : ValueObject
     /// </summary>
     public string Message { get; }
 
-    protected override IEnumerable<IComparable> GetEqualityComponents()
-    {
-        yield return Code;
-        yield return Message;
-    }
+    /// <summary>
+    ///     Вложенная ошибка
+    /// </summary>
+    public Error InnerError { get; }
 
     public string Serialize()
     {
-        return $"{Code}{Separator}{Message}";
+        return InnerError is null
+            ? $"{Code}{Separator}{Message}"
+            : string.Join(Separator, Code, Message, InnerError.Serialize());
     }
 
     public static Error Deserialize(string serialized)
     {
-        if (serialized == "A non-empty request body is required.")
-            return GeneralErrors.ValueIsRequired(nameof(serialized));
+        ArgumentException.ThrowIfNullOrWhiteSpace(serialized, nameof(serialized));
 
-        var data = serialized.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
+        var data = serialized.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
 
-        if (data.Length < 2)
-            throw new FormatException($"Invalid error serialization: '{serialized}'");
+        return data.Length == 0 || data.Length % RequiredPropertiesCount != 0
+            ? throw new FormatException($"{nameof(serialized)} parts count is 0 or not divisible by {RequiredPropertiesCount}: '{serialized}'")
+            : CreateErrorRecursively(data, 0);
+    }
 
-        return new Error(data[0], data[1]);
+    protected override IEnumerable<IComparable> GetEqualityComponents()
+    {
+        var error = this;
+        
+        while (true)
+        {
+            if (error is null) yield break;
+
+            yield return error.Code;
+            yield return error.Message;
+
+            error = error.InnerError;
+        }
+    }
+
+    private static Error CreateErrorRecursively(string[] data, int index)
+    {
+        return index >= data.Length
+            ? null
+            : new Error(data[index], data[index + 1], CreateErrorRecursively(data, index + 2));
     }
 }

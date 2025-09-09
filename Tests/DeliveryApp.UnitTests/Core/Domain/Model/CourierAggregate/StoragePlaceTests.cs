@@ -3,7 +3,7 @@ using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using FluentAssertions;
 using Xunit;
 
-namespace DeliveryApp.UnitTests.Domain.Model.CourierAggregate;
+namespace DeliveryApp.UnitTests.Core.Domain.Model.CourierAggregate;
 
 public class StoragePlaceTests
 {

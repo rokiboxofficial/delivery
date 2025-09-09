@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using DeliveryApp.Core.Application.Services;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
@@ -7,7 +6,7 @@ using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace DeliveryApp.UnitTests.Application.Services;
+namespace DeliveryApp.UnitTests.Core.Application.Services;
 
 public class RandomLocationProviderTests
 {
