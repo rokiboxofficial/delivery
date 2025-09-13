@@ -14,12 +14,12 @@ public sealed class Order : Aggregate<Guid>
         
     }
     
-    private Order(Guid orderId, Location location, int volume)
+    private Order(Guid orderId, Location location, int volume, OrderStatus status)
     {
         Id = orderId;
         Location = location;
         Volume = volume;
-        Status = OrderStatus.Created;
+        Status = status;
     }
     
     public Location Location { get; }
@@ -36,7 +36,7 @@ public sealed class Order : Aggregate<Guid>
         if (location == null) return GeneralErrors.ValueIsRequired(nameof(location));
         if (volume <= 0) return GeneralErrors.ValueIsInvalid(nameof(volume));
         
-        return new Order(orderId, location, volume);
+        return new Order(orderId, location, volume, OrderStatus.Created);
     }
     
     public UnitResult<Error> Assign(Courier courier)
