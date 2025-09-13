@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
 using FluentAssertions;
 using Xunit;
@@ -7,6 +9,27 @@ namespace DeliveryApp.UnitTests.Core.Domain.Model.SharedKernel;
 
 public class LocationTests
 {
+    [Fact]
+    public void WhenCheckingIsValueObjectAssignableFromLocation_ThenResultShouldBeTrue()
+    {
+        // Act.
+        var isValueObjectAssignableFromLocation = typeof(ValueObject).IsAssignableFrom(typeof(Location));
+
+        // Assert.
+        isValueObjectAssignableFromLocation.Should().BeTrue();
+    }
+    
+    [Fact]
+    public void WhenGettingConstructors_ThenEachConstructorShouldBePrivate()
+    {
+        // Act.
+        var constructors = typeof(Location).GetConstructors(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        // Assert.
+        constructors.Should().AllSatisfy(x => x.IsPrivate.Should().BeTrue());
+    }
+    
     [Theory]
     [MemberData(nameof(BothXandYInBounds_ButAtLeastXorYIsMinOrMaxBound_Data))]
     public void WhenCreatingLocation_AndBothXandYInBounds_ButAtLeastXorYIsMinOrMaxBound_ThenCreatingResultXandYShouldBeInitialXandY(int initialX, int initialY)

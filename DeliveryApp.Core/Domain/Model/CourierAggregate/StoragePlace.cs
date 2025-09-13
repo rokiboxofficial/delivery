@@ -58,6 +58,7 @@ public sealed class StoragePlace : Entity<Guid>
         return UnitResult.Success<Error>();
     }
 
+    [ExcludeFromCodeCoverage]
     public static class Errors
     {
         public static Error OrderCannotBeStored(string message = "Order cannot be stored", Error innerError = null)

@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using FluentAssertions;
 using Xunit;
@@ -7,6 +9,27 @@ namespace DeliveryApp.UnitTests.Core.Domain.Model.CourierAggregate;
 
 public class StoragePlaceTests
 {
+    [Fact]
+    public void WhenCheckingIsEntityAssignableFromStoragePlace_ThenResultShouldBeTrue()
+    {
+        // Act.
+        var isEntityAssignableFromStoragePlace = typeof(Entity<Guid>).IsAssignableFrom(typeof(StoragePlace));
+
+        // Assert.
+        isEntityAssignableFromStoragePlace.Should().BeTrue();
+    }
+    
+    [Fact]
+    public void WhenGettingConstructors_ThenEachConstructorShouldBePrivate()
+    {
+        // Act.
+        var constructors = typeof(StoragePlace).GetConstructors(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        // Assert.
+        constructors.Should().AllSatisfy(x => x.IsPrivate.Should().BeTrue());
+    }
+    
     [Theory]
     [InlineData(null, 1)]
     [InlineData("", 1)]
