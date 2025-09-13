@@ -54,7 +54,7 @@ public sealed class Courier : Aggregate<Guid>
     {
         return order is null 
             ? GeneralErrors.ValueIsRequired(nameof(order))
-            : StoragePlaces.Any(storagePlace => storagePlace.CanStore(order.Volume).Value);
+            : StoragePlaces.Any(storagePlace => storagePlace.CanStore(order).Value);
     }
 
     public UnitResult<Error> TakeOrder(Order order)
@@ -63,9 +63,9 @@ public sealed class Courier : Aggregate<Guid>
         if (!CanTakeOrder(order).Value) return Errors.OrderCannotBeTakenByCourier();
         
         StoragePlaces
-            .Where(storagePlace => storagePlace.CanStore(order.Volume).Value)
+            .Where(storagePlace => storagePlace.CanStore(order).Value)
             .MinBy(storagePlace => storagePlace.TotalVolume)
-            .Store(order.Id, order.Volume);
+            .Store(order);
 
         return UnitResult.Success<Error>();
     }
@@ -77,7 +77,7 @@ public sealed class Courier : Aggregate<Guid>
         var orderStoragePlace = StoragePlaces.SingleOrDefault(storagePlace => storagePlace.OrderId == order.Id);
         if (orderStoragePlace == null) return Errors.CourierHasNoSpecifiedOrder(order);
         
-        orderStoragePlace.Clear(order.Id);
+        orderStoragePlace.Clear(order);
 
         return UnitResult.Success<Error>();
     }

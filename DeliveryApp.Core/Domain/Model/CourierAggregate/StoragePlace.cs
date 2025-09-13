@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using CSharpFunctionalExtensions;
+using DeliveryApp.Core.Domain.Model.OrderAggregate;
 using Primitives;
 
 namespace DeliveryApp.Core.Domain.Model.CourierAggregate;
@@ -31,27 +32,27 @@ public sealed class StoragePlace : Entity<Guid>
         return new StoragePlace(name, totalVolume);
     }
 
-    public Result<bool, Error> CanStore(int orderVolume)
+    public Result<bool, Error> CanStore(Order order)
     {
-        if(orderVolume <= 0) return GeneralErrors.ValueIsInvalid(nameof(orderVolume));
+        if(order.Volume <= 0) return GeneralErrors.ValueIsInvalid(nameof(order.Volume));
         
-        return orderVolume <= TotalVolume && OrderId is null;
+        return order.Volume <= TotalVolume && OrderId is null;
     }
 
-    public UnitResult<Error> Store(Guid orderId, int orderVolume)
+    public UnitResult<Error> Store(Order order)
     {
-        if (CanStore(orderVolume) is var canStore && (canStore.IsFailure || !canStore.Value))
+        if (CanStore(order) is var canStore && (canStore.IsFailure || !canStore.Value))
             return Errors.OrderCannotBeStored(innerError: canStore.IsFailure ? canStore.Error : null);
 
-        OrderId = orderId;
+        OrderId = order.Id;
         
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> Clear(Guid orderId)
+    public UnitResult<Error> Clear(Order order)
     {
-        if (OrderId is null || OrderId != orderId)
-            return Errors.OrderCannotBeCleared($"OrderId({OrderId}) is not set or not equal to {orderId}");
+        if (OrderId is null || OrderId != order.Id)
+            return Errors.OrderCannotBeCleared($"OrderId({OrderId}) is not set or not equal to {order.Id}");
 
         OrderId = null;
         return UnitResult.Success<Error>();

@@ -44,30 +44,16 @@ public class StoragePlaceTests
             .Be(new { Name = initialName, TotalVolume = initialTotalVolume });
         creatingResult.Value.Id.Should().NotBe(Guid.Empty);
     }
-
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(0)]
-    public void WhenCanStoring_AndOrderVolumeIsNegativeOr0_ThenCanStoringResultErrorCodeShouldBeValueIsInvalid(int volume)
-    {
-        // Arrange.
-        var storagePlace = Create.StoragePlace();
-        
-        // Act.
-        var canStoringResult = storagePlace.CanStore(volume);
-
-        // Assert.
-        canStoringResult.Error.Code.Should().Be(ErrorCodes.ValueIsInvalid);
-    }
-
+    
     [Fact]
     public void WhenCanStoring_AndOrderVolumeIsGreaterThanStoragePlaceTotalVolume_ThenResultShouldBeFalse()
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
+        var order = Create.Order(volume: storagePlace.TotalVolume + 1);
 
         // Act.
-        var result = storagePlace.CanStore(storagePlace.TotalVolume + 1).Value;
+        var result = storagePlace.CanStore(order).Value;
 
         // Assert.
         result.Should().BeFalse();
@@ -78,10 +64,12 @@ public class StoragePlaceTests
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
-        storagePlace.Store(Guid.NewGuid(), 1);
+        var order = Create.Order(Guid.NewGuid());
+        
+        storagePlace.Store(order);
         
         // Act.
-        var result = storagePlace.CanStore(1).Value;
+        var result = storagePlace.CanStore(order).Value;
 
         // Assert.
         result.Should().BeFalse();
@@ -94,9 +82,10 @@ public class StoragePlaceTests
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
+        var order = Create.Order(volume: volume);
         
         // Act.
-        var result = storagePlace.CanStore(volume).Value;
+        var result = storagePlace.CanStore(order).Value;
         
         // Assert.
         result.Should().BeTrue();
@@ -107,25 +96,11 @@ public class StoragePlaceTests
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
-        storagePlace.Store(Guid.NewGuid(), 1);
+        storagePlace.Store(Create.Order());
+        var order = Create.Order();
 
         // Act.
-        var storingResult = storagePlace.Store(Guid.NewGuid(), 1);
-
-        // Assert.
-        storingResult.Error.Code.Should().Be(ErrorCodes.OrderCannotBeStored);
-    }
-
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(0)]
-    public void WhenStoring_AndOrderVolumeIsNegativeOr0_ThenStoringResultErrorCodeShouldBeOrderCannotBeStored(int volume)
-    {
-        // Arrange.
-        var storagePlace = Create.StoragePlace();
-
-        // Act.
-        var storingResult = storagePlace.Store(Guid.NewGuid(), volume);
+        var storingResult = storagePlace.Store(order);
 
         // Assert.
         storingResult.Error.Code.Should().Be(ErrorCodes.OrderCannotBeStored);
@@ -136,9 +111,10 @@ public class StoragePlaceTests
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
+        var order = Create.Order(volume: storagePlace.TotalVolume + 1);
         
         // Act.
-        var storingResult = storagePlace.Store(Guid.NewGuid(), storagePlace.TotalVolume + 1);
+        var storingResult = storagePlace.Store(order);
         
         // Assert.
         storingResult.Error.Code.Should().Be(ErrorCodes.OrderCannotBeStored);
@@ -152,9 +128,10 @@ public class StoragePlaceTests
         // Arrange.
         var initialOrderId = Guid.NewGuid();
         var storagePlace = Create.StoragePlace();
+        var order = Create.Order(initialOrderId, orderVolume);
 
         // Act.
-        var storingResult = storagePlace.Store(initialOrderId, orderVolume);
+        var storingResult = storagePlace.Store(order);
 
         // Assert.
         storagePlace.OrderId.Should().Be(initialOrderId);
@@ -166,9 +143,10 @@ public class StoragePlaceTests
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
+        var order = Create.Order();
 
         // Act.
-        var clearingResult = storagePlace.Clear(Guid.NewGuid());
+        var clearingResult = storagePlace.Clear(order);
 
         // Assert.
         clearingResult.Error.Code.Should().Be(ErrorCodes.OrderCannotBeCleared);
@@ -179,10 +157,11 @@ public class StoragePlaceTests
     {
         // Arrange.
         var storagePlace = Create.StoragePlace();
-        storagePlace.Store(Guid.NewGuid(), 1);
+        storagePlace.Store(Create.Order());
+        var order = Create.Order();
 
         // Act.
-        var clearingResult = storagePlace.Clear(Guid.NewGuid());
+        var clearingResult = storagePlace.Clear(order);
 
         // Assert.
         clearingResult.Error.Code.Should().Be(ErrorCodes.OrderCannotBeCleared);
@@ -194,10 +173,11 @@ public class StoragePlaceTests
         // Arrange.
         var orderId = Guid.NewGuid();
         var storagePlace = Create.StoragePlace();
-        storagePlace.Store(orderId, 1);
+        var order = Create.Order(orderId);
+        storagePlace.Store(order);
 
         // Act.
-        var clearingResult = storagePlace.Clear(orderId);
+        var clearingResult = storagePlace.Clear(order);
 
         // Assert.
         storagePlace.OrderId.Should().BeNull();
