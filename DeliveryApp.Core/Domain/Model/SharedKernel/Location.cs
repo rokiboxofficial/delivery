@@ -38,13 +38,15 @@ public sealed class Location : ValueObject
 
         return new Location(x, y);
     }
+    
     public Result<int, Error> DistanceTo(Location target)
     {
         if (target is null) return GeneralErrors.ValueIsRequired(nameof(target));
         
-        var distance = Math.Abs(target.X - this.X) + Math.Abs(target.Y - this.Y);
+        var distance = Math.Abs(target.X - X) + Math.Abs(target.Y - Y);
         return distance;
     }
+    
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return X;

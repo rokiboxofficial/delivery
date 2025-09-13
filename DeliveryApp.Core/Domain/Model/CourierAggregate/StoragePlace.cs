@@ -61,9 +61,9 @@ public sealed class StoragePlace : Entity<Guid>
     public static class Errors
     {
         public static Error OrderCannotBeStored(string message = "Order cannot be stored", Error innerError = null)
-            => new Error("order.cannot.be.stored", message, innerError);
+            => new ("order.cannot.be.stored", message, innerError);
         
         public static Error OrderCannotBeCleared(string message = "Order cannot be cleared", Error innerError = null)
-            => new Error("order.cannot.be.cleared", message, innerError);
+            => new ("order.cannot.be.cleared", message, innerError);
     }
 }
