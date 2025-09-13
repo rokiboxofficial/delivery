@@ -32,17 +32,12 @@ public sealed class StoragePlace : Entity<Guid>
         return new StoragePlace(name, totalVolume);
     }
 
-    public Result<bool, Error> CanStore(Order order)
-    {
-        if(order.Volume <= 0) return GeneralErrors.ValueIsInvalid(nameof(order.Volume));
-        
-        return order.Volume <= TotalVolume && OrderId is null;
-    }
+    public bool CanStore(Order order)
+        => order.Volume <= TotalVolume && OrderId is null;
 
     public UnitResult<Error> Store(Order order)
     {
-        if (CanStore(order) is var canStore && (canStore.IsFailure || !canStore.Value))
-            return Errors.OrderCannotBeStored(innerError: canStore.IsFailure ? canStore.Error : null);
+        if (!CanStore(order)) return Errors.OrderCannotBeStored();
 
         OrderId = order.Id;
         
@@ -55,6 +50,7 @@ public sealed class StoragePlace : Entity<Guid>
             return Errors.OrderCannotBeCleared($"OrderId({OrderId}) is not set or not equal to {order.Id}");
 
         OrderId = null;
+        
         return UnitResult.Success<Error>();
     }
 

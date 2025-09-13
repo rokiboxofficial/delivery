@@ -76,7 +76,7 @@ public class StoragePlaceTests
         var order = Create.Order(volume: storagePlace.TotalVolume + 1);
 
         // Act.
-        var result = storagePlace.CanStore(order).Value;
+        var result = storagePlace.CanStore(order);
 
         // Assert.
         result.Should().BeFalse();
@@ -92,7 +92,7 @@ public class StoragePlaceTests
         storagePlace.Store(order);
         
         // Act.
-        var result = storagePlace.CanStore(order).Value;
+        var result = storagePlace.CanStore(order);
 
         // Assert.
         result.Should().BeFalse();
@@ -108,7 +108,7 @@ public class StoragePlaceTests
         var order = Create.Order(volume: volume);
         
         // Act.
-        var result = storagePlace.CanStore(order).Value;
+        var result = storagePlace.CanStore(order);
         
         // Assert.
         result.Should().BeTrue();
