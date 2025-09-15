@@ -1,4 +1,6 @@
+using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
+using DeliveryApp.Core.Domain.Model.SharedKernel;
 
 namespace DeliveryApp.UnitTests;
 
@@ -17,5 +19,14 @@ public static class Setup
         completed.Assign(Create.Courier());
         completed.Complete();
         return completed;
+    }
+
+    public static Courier BusyCourier(Location location = null)
+    {
+        location ??= Location.MinLocation;
+        
+        var busyCourier1 = Create.Courier(location: location);
+        busyCourier1.TakeOrder(Create.Order());
+        return busyCourier1;
     }
 }
