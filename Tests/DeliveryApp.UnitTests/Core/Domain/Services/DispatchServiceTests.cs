@@ -220,6 +220,34 @@ public class DispatchServiceTests
     }
 
     [Fact]
+    public void WhenDispatching_AndAllCouriersAreSuitableAndHaveDifferentSpeedsAndLocations_ThenCourierWithFastestDeliveryShouldBeDispatched()
+    {
+        // Arrange.
+        var dispatchService = Create.DispatchService();
+        var order = Create.Order(location: Create.Location());
+
+        var fastest = Create.Courier(speed: 100, location: Create.Location(10, 10));
+        
+        List<Courier> couriers = [
+            Create.Courier(speed: 1, location: Create.Location(x: 3)),
+            Create.Courier(speed: 2, location: Create.Location(x: 4)), 
+            Create.Courier(speed: 3, location: Create.Location(x: 5)),
+            fastest,
+            Create.Courier(speed: 4, location: Create.Location(6, 2)),
+            Create.Courier(speed: 2, location: Create.Location(x: 7)),
+            Create.Courier(speed: 10, location: Create.Location(x: 10, 10))
+        ];
+
+        // Act.
+        var dispatchingResult = dispatchService.Dispatch(order, couriers);
+
+        // Assert.
+        dispatchingResult.Value.Should().Be(fastest);
+        fastest.StoragePlaces[0].OrderId.Should().Be(order.Id);
+        order.CourierId.Should().Be(fastest.Id);
+    }
+    
+    [Fact]
     public void WhenDispatching_AndFewCouriersAreSuitableAndFewCouriersAreNot_ThenNearestSuitableCourierShouldBeDispatched()
     {
         // Arrange.
