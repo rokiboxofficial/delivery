@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
@@ -27,13 +28,14 @@ public sealed class DispatchService : IDispatchService
         return mostSuitableCourier;
     }
 
+    [ExcludeFromCodeCoverage]
     public static class Errors
     {
         public static Error OnlyOrderWithStatusCreatedCanBeDispatched(Order order)
         {
             return new Error(
                 "only.order.with.status.created.can.be.dispatched",
-                $"Only order with status \"Created\" can be dispatched. Actual order is {{id: {order?.Id}, volume: {order?.CourierId}, courierId: {order?.CourierId}, location: {order.Location}}}"
+                $"Order (id: {order?.Id}, status: {order?.Status?.Name}) cannot be dispatched, only order with status \"Created\" can be"
                 );
         }
 
@@ -41,7 +43,7 @@ public sealed class DispatchService : IDispatchService
         {
             return new Error(
                 "suitable.courier.not.found",
-                $"Suitable courier for order {{id: {order?.Id}, volume: {order?.CourierId}, courierId: {order?.CourierId}, location: {order?.Location}}} not found"
+                $"Suitable courier for order (id: {order?.Id}, volume: {order?.Volume}) not found"
                 );
         }
     }
