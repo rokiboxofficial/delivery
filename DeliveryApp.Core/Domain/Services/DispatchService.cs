@@ -3,6 +3,7 @@ using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
 using Primitives;
+using Primitives.Extensions;
 
 namespace DeliveryApp.Core.Domain.Services;
 
@@ -21,9 +22,9 @@ public sealed class DispatchService : IDispatchService
             .MinBy(courier => courier.GetRemainingMovesCount(order.Location).Value);
 
         if (mostSuitableCourier is null) return Errors.SuitableCourierNotFound(order);
-
-        order.Assign(mostSuitableCourier);
-        mostSuitableCourier.TakeOrder(order);
+        
+        order.Assign(mostSuitableCourier).ThrowIfFailure();
+        mostSuitableCourier.TakeOrder(order).ThrowIfFailure();
         
         return mostSuitableCourier;
     }
