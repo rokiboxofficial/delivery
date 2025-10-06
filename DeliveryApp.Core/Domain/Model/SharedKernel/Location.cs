@@ -9,12 +9,12 @@ public sealed class Location : ValueObject
     /// <summary>
     /// The inclusive lower bound of location.
     /// </summary>
-    public static readonly Location MinLocation = new(1, 1);
+    public static Location MinLocation => new(1, 1);
     
     /// <summary>
     /// The inclusive upper bound of location.
     /// </summary>
-    public static readonly Location MaxLocation = new(10, 10);
+    public static Location MaxLocation => new(10, 10);
     
     [ExcludeFromCodeCoverage]
     private Location()

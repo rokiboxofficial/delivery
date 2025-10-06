@@ -2,7 +2,7 @@ using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
 
-namespace DeliveryApp.UnitTests;
+namespace DeliveryApp.TestsCommon;
 
 public static class Setup
 {

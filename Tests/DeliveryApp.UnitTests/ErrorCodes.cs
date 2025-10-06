@@ -1,6 +1,7 @@
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
 using DeliveryApp.Core.Domain.Services;
+using DeliveryApp.TestsCommon;
 using Primitives;
 
 namespace DeliveryApp.UnitTests;

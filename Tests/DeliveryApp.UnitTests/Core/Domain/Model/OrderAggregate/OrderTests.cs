@@ -3,6 +3,7 @@ using System.Reflection;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
+using DeliveryApp.TestsCommon;
 using FluentAssertions;
 using Primitives;
 using Xunit;

@@ -1,7 +1,7 @@
 using DeliveryApp.Core.Domain.Model.SharedKernel;
 using static DeliveryApp.Core.Domain.Model.SharedKernel.Location;
 
-namespace DeliveryApp.UnitTests;
+namespace DeliveryApp.TestsCommon;
 
 public static partial class Create
 {

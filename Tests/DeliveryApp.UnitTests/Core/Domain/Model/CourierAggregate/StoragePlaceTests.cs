@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
+using DeliveryApp.TestsCommon;
 using FluentAssertions;
 using Xunit;
 
