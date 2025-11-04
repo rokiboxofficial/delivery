@@ -5,8 +5,8 @@ namespace DeliveryApp.Core.Application.UseCases.Queries.GetNotCompletedShortOrde
 
 public class GetNotCompletedShortOrdersHandler(IOrderReadModelProvider orderReadModelProvider) : IRequestHandler<GetNotCompletedShortOrdersQuery, GetNotCompletedShortOrdersResponse>
 {
-    private readonly IOrderReadModelProvider _courierReadModelProvider = orderReadModelProvider ?? throw new ArgumentNullException(nameof(orderReadModelProvider));
+    private readonly IOrderReadModelProvider _orderReadModelProvider = orderReadModelProvider ?? throw new ArgumentNullException(nameof(orderReadModelProvider));
 
     public Task<GetNotCompletedShortOrdersResponse> Handle(GetNotCompletedShortOrdersQuery request, CancellationToken cancellationToken)
-        => _courierReadModelProvider.GetNotCompletedShortOrdersAsync();
+        => _orderReadModelProvider.GetNotCompletedShortOrdersAsync();
 }
