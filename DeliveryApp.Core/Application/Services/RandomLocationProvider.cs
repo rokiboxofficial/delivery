@@ -3,7 +3,7 @@ using DeliveryApp.Core.Ports;
 
 namespace DeliveryApp.Core.Application.Services;
 
-public sealed class RandomLocationProvider(IRandomNumberProvider randomNumberProvider)
+public sealed class RandomLocationProvider(IRandomNumberProvider randomNumberProvider) : IRandomLocationProvider
 {
     public Location GetRandomLocation()
     {
