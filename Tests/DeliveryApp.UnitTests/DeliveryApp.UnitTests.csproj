@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\DeliveryApp.Api\DeliveryApp.Api.csproj" />
         <ProjectReference Include="..\..\DeliveryApp.Core\DeliveryApp.Core.csproj"/>
         <ProjectReference Include="..\DeliveryApp.TestsCommon\DeliveryApp.TestsCommon.csproj" />
     </ItemGroup>
