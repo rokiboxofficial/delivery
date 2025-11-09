@@ -1,10 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DeliveryApp.Core.Application.Services;
+using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Application.UseCases.Commands.CreateOrder;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
+using DeliveryApp.Core.Ports;
 using DeliveryApp.Core.Ports.Repositories;
 using DeliveryApp.TestsCommon;
 using FluentAssertions;
@@ -16,28 +17,28 @@ namespace DeliveryApp.UnitTests.Core.Application.UseCases.Commands.CreateOrder;
 
 public class CreateOrderHandlerTests
 {
-    private readonly IRandomLocationProvider _randomLocationProvider = Substitute.For<IRandomLocationProvider>();
+    private readonly IGeoClient _geoClientMock = Substitute.For<IGeoClient>();
     private readonly IOrderRepository _orderRepositoryMock = Substitute.For<IOrderRepository>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly CreateOrderHandler _createOrderHandler;
 
     public CreateOrderHandlerTests()
     {
-        _createOrderHandler = new CreateOrderHandler(_randomLocationProvider, _orderRepositoryMock, _unitOfWorkMock);
+        _createOrderHandler = new CreateOrderHandler(_geoClientMock, _orderRepositoryMock, _unitOfWorkMock);
     }
     
     [Fact]
-    public async Task WhenHandling_AndRandomLocationProviderReturnedNull_ThenResultShouldBeError()
+    public async Task WhenHandling_AndGeoClientReturnedFailure_ThenResultShouldBeGeoClientError()
     {
         // Arrange.
         var createOrderCommand = Create.CreateOrderCommand();
-        _randomLocationProvider.GetRandomLocation().Returns((Location)null);
+        _geoClientMock.GetLocation(Arg.Any<string>()).Returns(Result.Failure<Location, Error>(GeneralErrors.NotFound()));
 
         // Act.
         var handlingResult = await _createOrderHandler.Handle(createOrderCommand, CancellationToken.None);
 
         // Assert.
-        handlingResult.IsFailure.Should().BeTrue();
+        handlingResult.Error.Code.Should().Be(ErrorCodes.GeoClientError);
     }
 
     [Fact]
@@ -45,7 +46,7 @@ public class CreateOrderHandlerTests
     {
         // Arrange.
         var createOrderCommand = Create.CreateOrderCommand();
-        _randomLocationProvider.GetRandomLocation().Returns(Create.Location());
+        _geoClientMock.GetLocation(Arg.Any<string>()).Returns(Create.Location());
         _orderRepositoryMock.GetAsync(Arg.Any<Guid>()).Returns(Create.Order());
         
         // Act.
@@ -60,7 +61,7 @@ public class CreateOrderHandlerTests
     {
         // Arrange.
         var createOrderCommand = Create.CreateOrderCommand();
-        _randomLocationProvider.GetRandomLocation().Returns(Create.Location());
+        _geoClientMock.GetLocation(Arg.Any<string>()).Returns(Create.Location());
         _orderRepositoryMock.GetAsync(Arg.Any<Guid>()).Returns((Order) null);
 
         // Act.

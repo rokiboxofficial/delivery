@@ -22,4 +22,5 @@ public static class ErrorCodes
     public static string OnlyOrderWithStatusCreatedCanBeDispatched { get; } = DispatchService.Errors.OnlyOrderWithStatusCreatedCanBeDispatched(Create.Order()).Code;
     public static string SuitableCourierNotFound { get; } = DispatchService.Errors.SuitableCourierNotFound(Create.Order()).Code;
     public static string OrderAlreadyExists { get; } = CreateOrderHandler.Errors.OrderAlreadyExists(Create.Order()).Code;
+    public static string GeoClientError { get; } = GeneralErrors.GeoClientError().Code;
 }

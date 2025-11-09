@@ -1,4 +1,5 @@
 using System.Reflection;
+using Clients.Geo;
 using CSharpFunctionalExtensions;
 using DeliveryApp.Api;
 using DeliveryApp.Api.Adapters.BackgroundJobs;
@@ -13,9 +14,12 @@ using DeliveryApp.Core.Ports;
 using DeliveryApp.Core.Ports.ReadModelProviders;
 using DeliveryApp.Core.Ports.Repositories;
 using DeliveryApp.Infrastructure.Adapters.DotnetRandom;
+using DeliveryApp.Infrastructure.Adapters.Grpc.GeoService;
 using DeliveryApp.Infrastructure.Adapters.Postgres;
 using DeliveryApp.Infrastructure.Adapters.Postgres.ReadModelProviders;
 using DeliveryApp.Infrastructure.Adapters.Postgres.Repositories;
+using Grpc.Core;
+using Grpc.Net.Client.Configuration;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -45,6 +49,7 @@ builder.Services.AddCors(options =>
 // Configuration
 builder.Services.ConfigureOptions<SettingsSetup>();
 var connectionString = builder.Configuration["CONNECTION_STRING"];
+var geoServiceGrpcHost = builder.Configuration["GEO_SERVICE_GRPC_HOST"];
 
 // Domain Services
 builder.Services.AddScoped<IDispatchService, DispatchService>();
@@ -68,8 +73,9 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICourierRepository, CourierRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
-// Random number port
+// Ports
 builder.Services.AddScoped<IRandomNumberProvider, RandomNumberProvider>();
+builder.Services.AddScoped<IGeoClient, GeoClient>();
 
 // ReadModel Providers
 builder.Services.AddScoped<ICourierReadModelProvider, CourierReadModelProvider>();
@@ -141,6 +147,41 @@ builder.Services.AddQuartz(configure =>
                         .RepeatForever()));
 });
 builder.Services.AddQuartzHostedService();
+
+// gRPC
+builder.Services
+    .AddGrpcClient<Geo.GeoClient>(o =>
+    {
+        o.Address = new Uri(geoServiceGrpcHost!);
+    })
+    .ConfigureChannel(o =>
+    {
+        o.HttpHandler = new SocketsHttpHandler
+        {
+            PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
+            KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+            EnableMultipleHttp2Connections = true
+        };
+        o.ServiceConfig = new ServiceConfig
+        {
+            MethodConfigs =
+            {
+                new MethodConfig
+                {
+                    Names = { MethodName.Default },
+                    RetryPolicy = new RetryPolicy
+                    {
+                        MaxAttempts = 5,
+                        InitialBackoff = TimeSpan.FromSeconds(1),
+                        MaxBackoff = TimeSpan.FromSeconds(5),
+                        BackoffMultiplier = 1.5,
+                        RetryableStatusCodes = { StatusCode.Unavailable }
+                    }
+                }
+            }
+        };
+    });
 
 var app = builder.Build();
 

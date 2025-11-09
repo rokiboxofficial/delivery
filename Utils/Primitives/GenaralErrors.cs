@@ -47,4 +47,13 @@ public static class GeneralErrors
     {
         return new Error("internal.server.error", message, innerError);
     }
+    
+    public static Error GeoClientError(Error innerError = null)
+    {
+        return new Error(
+            "geo.client.error",
+            "Geo client return an error",
+            innerError
+        );
+    }
 }
