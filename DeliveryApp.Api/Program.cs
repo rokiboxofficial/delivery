@@ -1,8 +1,10 @@
 using System.Reflection;
 using Clients.Geo;
+using Confluent.Kafka;
 using CSharpFunctionalExtensions;
 using DeliveryApp.Api;
 using DeliveryApp.Api.Adapters.BackgroundJobs;
+using DeliveryApp.Api.Adapters.Kafka.BasketConfirmed;
 using DeliveryApp.Core.Application.Services;
 using DeliveryApp.Core.Application.UseCases.Commands.AssignOrder;
 using DeliveryApp.Core.Application.UseCases.Commands.CreateOrder;
@@ -13,6 +15,7 @@ using DeliveryApp.Core.Domain.Services;
 using DeliveryApp.Core.Ports;
 using DeliveryApp.Core.Ports.ReadModelProviders;
 using DeliveryApp.Core.Ports.Repositories;
+using DeliveryApp.Infrastructure;
 using DeliveryApp.Infrastructure.Adapters.DotnetRandom;
 using DeliveryApp.Infrastructure.Adapters.Grpc.GeoService;
 using DeliveryApp.Infrastructure.Adapters.Postgres;
@@ -22,6 +25,7 @@ using Grpc.Core;
 using Grpc.Net.Client.Configuration;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -30,6 +34,7 @@ using OpenApi.Formatters;
 using OpenApi.OpenApi;
 using Primitives;
 using Quartz;
+using Error = Primitives.Error;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,7 +108,6 @@ builder.Services.AddControllers(options => { options.InputFormatters.Insert(0, n
             NamingStrategy = new CamelCaseNamingStrategy()
         });
     });
-
 
 // Swagger
 builder.Services.AddSwaggerGen(options =>
@@ -182,6 +186,28 @@ builder.Services
             }
         };
     });
+
+// Message Broker Consumer
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+    options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<Settings>>();
+    var consumerConfig = new ConsumerConfig
+    {
+        BootstrapServers = settings?.Value.MessageBrokerHost ?? throw new ArgumentNullException(nameof(settings)),
+        GroupId = "DeliveryConsumerGroup",
+        EnableAutoOffsetStore = false,
+        EnableAutoCommit = true,
+        AutoOffsetReset = AutoOffsetReset.Earliest,
+        EnablePartitionEof = true
+    };
+    return new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
+});
+builder.Services.AddHostedService<ConsumerService>();
 
 var app = builder.Build();
 

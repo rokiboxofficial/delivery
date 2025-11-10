@@ -9,6 +9,7 @@ using DeliveryApp.Core.Domain.Services;
 using DeliveryApp.Core.Ports.Repositories;
 using DeliveryApp.TestsCommon;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Primitives;
 using Xunit;
@@ -21,11 +22,12 @@ public class AssignOrderHandlerTests
     private readonly ICourierRepository _courierRepositoryMock = Substitute.For<ICourierRepository>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly IDispatchService _dispatchServiceMock = Substitute.For<IDispatchService>();
+    private readonly ILogger<AssignOrderHandler> _loggerMock = Substitute.For<ILogger<AssignOrderHandler>>();
     private readonly AssignOrderHandler _assignOrderHandler;
 
     public AssignOrderHandlerTests()
     {
-        _assignOrderHandler = new AssignOrderHandler(_orderRepositoryMock, _courierRepositoryMock, _unitOfWorkMock, _dispatchServiceMock);
+        _assignOrderHandler = new AssignOrderHandler(_orderRepositoryMock, _courierRepositoryMock, _unitOfWorkMock, _dispatchServiceMock, _loggerMock);
     }
     
     [Fact]

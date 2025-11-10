@@ -45,11 +45,12 @@
         <ProjectReference Include="..\DeliveryApp.Infrastructure\DeliveryApp.Infrastructure.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Adapters\Kafka\BasketConfirmed\Contract.proto"/>
-    </ItemGroup>
-    <ItemGroup>
         <_ContentIncludedByDefault Remove="Adapters\Http\Contract\src\DeliveryApp.Api.Adapters.Http.Contract.src.OpenApi\appsettings.json"/>
         <_ContentIncludedByDefault Remove="Adapters\Http\Contract\src\DeliveryApp.Api.Adapters.Http.Contract.src.OpenApi\Properties\launchSettings.json"/>
         <_ContentIncludedByDefault Remove="Adapters\Http\Contract\src\DeliveryApp.Api.Adapters.Http.Contract.src.OpenApi\wwwroot\openapi-original.json"/>
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Adapters\Kafka\BasketConfirmed\Contract.proto" />
+      <Protobuf Include="Adapters\Kafka\BasketConfirmed\Contract.proto" />
     </ItemGroup>
 </Project>
