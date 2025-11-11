@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
 using DeliveryApp.Core.Domain.Model.OrderAggregate;
+using DeliveryApp.Core.Domain.Model.OrderAggregate.DomainEvents;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
 using DeliveryApp.TestsCommon;
 using FluentAssertions;
@@ -82,6 +84,16 @@ public class OrderTests
     }
 
     [Fact]
+    public void WhenCreating_ThenOrderDomainEventsShouldContainSingleOrderCreatedDomainEvent()
+    {
+        // Act.
+        var order = Order.Create(Guid.NewGuid(), Location.MaxLocation, 1).Value;
+
+        // Assert.
+        order.GetDomainEvents().Cast<OrderCreatedDomainEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
     public void WhenAssigning_AndCourierIsNull_ThenErrorShouldBeValueIsRequired()
     {
         // Arrange.
@@ -159,6 +171,19 @@ public class OrderTests
         // Assert.
         new { completingResult.IsSuccess, assignedOrder.Status, assignedOrder.CourierId }.Should().Be(
             new { IsSuccess = true, Status = OrderStatus.Completed, CourierId = courierId });
+    }
+
+    [Fact]
+    public void WhenCompleting_AndOrderIsAssigned_ThenOrderDomainEventsShouldContainSingleOrderCompletedDomainEvent()
+    {
+        // Arrange.
+        var assignedOrder = Setup.AssignedOrder();
+
+        // Act.
+        assignedOrder.Complete();
+
+        // Assert.
+        assignedOrder.GetDomainEvents().Where(e => e is OrderCompletedDomainEvent).Cast<OrderCompletedDomainEvent>().Should().ContainSingle();
     }
     
     public static TheoryData<Order> OrdersWhereStatusIsNotCreated()

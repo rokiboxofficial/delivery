@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using CSharpFunctionalExtensions;
 using DeliveryApp.Core.Domain.Model.CourierAggregate;
+using DeliveryApp.Core.Domain.Model.OrderAggregate.DomainEvents;
 using DeliveryApp.Core.Domain.Model.SharedKernel;
 using Primitives;
+using Primitives.Exceptions;
 
 namespace DeliveryApp.Core.Domain.Model.OrderAggregate;
 
@@ -20,6 +22,8 @@ public sealed class Order : Aggregate<Guid>
         Location = location;
         Volume = volume;
         Status = status;
+        
+        RaiseDomainEvent(new OrderCreatedDomainEvent(orderId));
     }
     
     public Location Location { get; }
@@ -56,6 +60,10 @@ public sealed class Order : Aggregate<Guid>
             return Errors.NotAssignedOrderCannotBeCompleted();
 
         Status = OrderStatus.Completed;
+
+        if (!CourierId.HasValue) throw new DomainInvariantException("Order should has CourierId when completing");
+        RaiseDomainEvent(new OrderCompletedDomainEvent(Id, CourierId!.Value));
+        
         return UnitResult.Success<Error>();
     }
     

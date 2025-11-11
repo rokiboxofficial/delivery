@@ -5,12 +5,14 @@ using CSharpFunctionalExtensions;
 using DeliveryApp.Api;
 using DeliveryApp.Api.Adapters.BackgroundJobs;
 using DeliveryApp.Api.Adapters.Kafka.BasketConfirmed;
+using DeliveryApp.Core.Application.DomainEventHandlers;
 using DeliveryApp.Core.Application.Services;
 using DeliveryApp.Core.Application.UseCases.Commands.AssignOrder;
 using DeliveryApp.Core.Application.UseCases.Commands.CreateOrder;
 using DeliveryApp.Core.Application.UseCases.Commands.MoveCouriers;
 using DeliveryApp.Core.Application.UseCases.Queries.GetAllShortCouriers;
 using DeliveryApp.Core.Application.UseCases.Queries.GetNotCompletedShortOrders;
+using DeliveryApp.Core.Domain.Model.OrderAggregate.DomainEvents;
 using DeliveryApp.Core.Domain.Services;
 using DeliveryApp.Core.Ports;
 using DeliveryApp.Core.Ports.ReadModelProviders;
@@ -18,6 +20,7 @@ using DeliveryApp.Core.Ports.Repositories;
 using DeliveryApp.Infrastructure;
 using DeliveryApp.Infrastructure.Adapters.DotnetRandom;
 using DeliveryApp.Infrastructure.Adapters.Grpc.GeoService;
+using DeliveryApp.Infrastructure.Adapters.Kafka.Order;
 using DeliveryApp.Infrastructure.Adapters.Postgres;
 using DeliveryApp.Infrastructure.Adapters.Postgres.ReadModelProviders;
 using DeliveryApp.Infrastructure.Adapters.Postgres.Repositories;
@@ -208,6 +211,23 @@ builder.Services.AddSingleton(serviceProvider =>
     return new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
 });
 builder.Services.AddHostedService<ConsumerService>();
+
+// Domain Event Handlers
+builder.Services.AddScoped<INotificationHandler<OrderCreatedDomainEvent>, OrderCreatedDomainEventHandler>();
+builder.Services.AddScoped<INotificationHandler<OrderCompletedDomainEvent>, OrderCompletedDomainEventHandler>();
+
+// Message Broker Producer
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<Settings>>();
+    var config = new ProducerConfig
+    {
+        BootstrapServers = settings?.Value.MessageBrokerHost ?? throw new ArgumentNullException(nameof(settings))
+    };
+
+    return new ProducerBuilder<string, string>(config).Build();
+});
+builder.Services.AddScoped<IMessageBusProducer, Producer>();
 
 var app = builder.Build();
 
