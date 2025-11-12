@@ -20,6 +20,9 @@ public sealed class Producer(IProducer<string, string> producer, IOptions<Settin
     {
         var integrationEvent = new OrderCreatedIntegrationEvent
         {
+            EventId = notification.EventId.ToString(),
+            OccurredAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(notification.OccurredAt),
+            
             OrderId = notification.OrderId.ToString()
         };
         
@@ -30,6 +33,9 @@ public sealed class Producer(IProducer<string, string> producer, IOptions<Settin
     {
         var integrationEvent = new OrderCompletedIntegrationEvent
         {
+            EventId = notification.EventId.ToString(),
+            OccurredAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(notification.OccurredAt),
+            
             OrderId = notification.OrderId.ToString(),
             CourierId = notification.CourierId.ToString()
         };
