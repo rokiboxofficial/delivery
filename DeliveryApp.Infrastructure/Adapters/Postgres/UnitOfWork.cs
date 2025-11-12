@@ -1,36 +1,50 @@
-﻿using MediatR;
+﻿using DeliveryApp.Infrastructure.Adapters.Postgres.Entities;
+using Newtonsoft.Json;
 using Primitives;
 
 namespace DeliveryApp.Infrastructure.Adapters.Postgres;
 
-public class UnitOfWork(ApplicationDbContext dbContext, IMediator mediator) : IUnitOfWork
+public class UnitOfWork(ApplicationDbContext dbContext) : IUnitOfWork
 {
     private readonly ApplicationDbContext _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-    private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
 
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        await SaveDomainEventsInOutboxAsync();
         await _dbContext.SaveChangesAsync(cancellationToken);
-        await PublishDomainEventsAsync();
         return true;
     }
-    
-    private async Task PublishDomainEventsAsync()
+
+    private async Task SaveDomainEventsInOutboxAsync()
     {
-        var domainEntities = _dbContext.ChangeTracker
+        var outboxes = _dbContext.ChangeTracker
             .Entries<IAggregateRoot>()
-            .Where(x => x.Entity.GetDomainEvents().Count != 0)
+            .Select(x => x.Entity)
+            .SelectMany(aggregate =>
+                {
+                    var domainEvents = aggregate.GetDomainEvents();
+                    aggregate.ClearDomainEvents();
+
+                    return domainEvents;
+                }
+            )
+            .Select(domainEvent => new Outbox
+            {
+                Id = domainEvent.EventId,
+                OccurredOnUtc = DateTime.UtcNow,
+                Type = domainEvent.GetType().Name,
+                Content = JsonConvert.SerializeObject(
+                    domainEvent,
+                    new JsonSerializerSettings
+                    {
+                        // Эта настройка нужна, чтобы сериализовать Domain Event с указанием типов
+                        // Если ее не указать, то десеарилизатор не поймет в какой тип восстанавоивать сообщение
+                        TypeNameHandling = TypeNameHandling.All
+                    })
+            })
             .ToArray();
 
-        var domainEvents = domainEntities
-            .SelectMany(x => x.Entity.GetDomainEvents())
-            .ToArray();
-
-        foreach(var domainEntity in domainEntities)
-            domainEntity.Entity.ClearDomainEvents();
-
-        foreach (var domainEvent in domainEvents)
-            await _mediator.Publish(domainEvent);
+        if(outboxes.Length > 0)
+            await _dbContext.Set<Outbox>().AddRangeAsync(outboxes);
     }
-
 }

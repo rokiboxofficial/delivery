@@ -22,6 +22,7 @@ using DeliveryApp.Infrastructure.Adapters.DotnetRandom;
 using DeliveryApp.Infrastructure.Adapters.Grpc.GeoService;
 using DeliveryApp.Infrastructure.Adapters.Kafka.Order;
 using DeliveryApp.Infrastructure.Adapters.Postgres;
+using DeliveryApp.Infrastructure.Adapters.Postgres.BackgroundJobs;
 using DeliveryApp.Infrastructure.Adapters.Postgres.ReadModelProviders;
 using DeliveryApp.Infrastructure.Adapters.Postgres.Repositories;
 using Grpc.Core;
@@ -139,6 +140,8 @@ builder.Services.AddQuartz(configure =>
 {
     var assignOrderJobKey = new JobKey(nameof(AssignOrderJob));
     var moveCouriersJobKey = new JobKey(nameof(MoveCouriersJob));
+    var outboxProcessingJobKey = new JobKey(nameof(OutboxProcessingJob));
+    
     configure
         .AddJob<AssignOrderJob>(assignOrderJobKey)
         .AddTrigger(
@@ -151,6 +154,12 @@ builder.Services.AddQuartz(configure =>
             trigger => trigger.ForJob(moveCouriersJobKey)
                 .WithSimpleSchedule(
                     schedule => schedule.WithIntervalInSeconds(2)
+                        .RepeatForever()))
+        .AddJob<OutboxProcessingJob>(outboxProcessingJobKey)
+        .AddTrigger(
+            trigger => trigger.ForJob(outboxProcessingJobKey)
+                .WithSimpleSchedule(
+                    schedule => schedule.WithIntervalInSeconds(3)
                         .RepeatForever()));
 });
 builder.Services.AddQuartzHostedService();

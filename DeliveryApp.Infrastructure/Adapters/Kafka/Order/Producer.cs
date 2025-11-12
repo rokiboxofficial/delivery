@@ -51,15 +51,8 @@ public sealed class Producer(IProducer<string, string> producer, IOptions<Settin
             Value = JsonConvert.SerializeObject(integrationEvent)
         };
         
-        try
-        {
-            var delivery = await _producer.ProduceAsync(_topicName, message, cancellationToken);
-            _logger.LogTrace("Delivered '{value}' to '{topicPartitionOffset}'", delivery.Value,
-                delivery.TopicPartitionOffset);
-        }
-        catch (ProduceException<Null, string> e)
-        {
-            _logger.LogError(e, "Delivery failed");
-        }
+        var delivery = await _producer.ProduceAsync(_topicName, message, cancellationToken);
+        _logger.LogTrace("Delivered '{value}' to '{topicPartitionOffset}'", delivery.Value,
+            delivery.TopicPartitionOffset);
     }
 }
