@@ -18,36 +18,40 @@ public sealed class Producer(IProducer<string, string> producer, IOptions<Settin
 
     public async Task Publish(OrderCreatedDomainEvent notification, CancellationToken cancellationToken)
     {
+        var eventId = notification.EventId.ToString();
+        
         var integrationEvent = new OrderCreatedIntegrationEvent
         {
-            EventId = notification.EventId.ToString(),
+            EventId = eventId,
             OccurredAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(notification.OccurredAt),
             
             OrderId = notification.OrderId.ToString()
         };
         
-        await ProduceAsync(notification, integrationEvent, cancellationToken);
+        await ProduceAsync(eventId, integrationEvent, cancellationToken);
     }
 
     public async Task Publish(OrderCompletedDomainEvent notification, CancellationToken cancellationToken)
     {
+        var eventId = notification.EventId.ToString();
+        
         var integrationEvent = new OrderCompletedIntegrationEvent
         {
-            EventId = notification.EventId.ToString(),
+            EventId = eventId,
             OccurredAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(notification.OccurredAt),
             
             OrderId = notification.OrderId.ToString(),
             CourierId = notification.CourierId.ToString()
         };
         
-        await ProduceAsync(notification, integrationEvent, cancellationToken);
+        await ProduceAsync(eventId, integrationEvent, cancellationToken);
     }
     
-    private async Task ProduceAsync(DomainEvent domainEvent, object integrationEvent, CancellationToken cancellationToken)
+    private async Task ProduceAsync(string eventId, object integrationEvent, CancellationToken cancellationToken)
     {
         var message = new Message<string, string>
         {
-            Key = domainEvent.EventId.ToString(),
+            Key = eventId,
             Value = JsonConvert.SerializeObject(integrationEvent)
         };
         
